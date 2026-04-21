@@ -1,178 +1,140 @@
-"use client";
+'use client'
 
-import { useEffect, useRef } from "react";
-import { X, MapPin } from "lucide-react";
+import { useEffect, useRef } from 'react'
+import { X, MapPin } from 'lucide-react'
 
 interface Props {
-  coords: string;
-  onConfirm: (coords: string) => void;
-  onClose: () => void;
+  coords: string
+  onConfirm: (coords: string) => void
+  onClose: () => void
 }
 
 export default function MapPickerModal({ coords, onConfirm, onClose }: Props) {
-  const mapRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<HTMLDivElement>(null)
   const leafletRef = useRef<{
-    map: import("leaflet").Map;
-    marker: import("leaflet").Marker | null;
-    selectedLatLng: { lat: number; lng: number } | null;
-  } | null>(null);
+    map: import('leaflet').Map
+    marker: import('leaflet').Marker | null
+    selectedLatLng: { lat: number; lng: number } | null
+  } | null>(null)
 
   useEffect(() => {
-    let isMounted = true;
+    let isMounted = true
 
     async function initMap() {
-      const L = (await import("leaflet")).default;
-      await import("leaflet/dist/leaflet.css");
+      const L = (await import('leaflet')).default
+      await import('leaflet/dist/leaflet.css')
 
-      if (!mapRef.current || !isMounted) return;
+      if (!mapRef.current || !isMounted) return
 
       // Parse initial coords
-      const match = coords.match(/([\d.]+)°\s*N,\s*([\d.]+)°\s*E/);
-      const initLat = match ? parseFloat(match[1]) : 39.6547;
-      const initLng = match ? parseFloat(match[2]) : 66.9758;
+      const match = coords.match(/([\d.]+)°\s*N,\s*([\d.]+)°\s*E/)
+      const initLat = match ? parseFloat(match[1]) : 39.6547
+      const initLng = match ? parseFloat(match[2]) : 66.9758
 
-      const map = L.map(mapRef.current, { zoomControl: true }).setView([initLat, initLng], 14);
+      const map = L.map(mapRef.current, { zoomControl: true }).setView([initLat, initLng], 14)
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap contributors",
-      }).addTo(map);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+      }).addTo(map)
 
-      // Custom icon
+      // Custom icon using tailwind-like colors for the gradient
       const icon = L.divIcon({
-        html: `<div style="width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:linear-gradient(135deg,#2563eb,#1d4ed8);border:3px solid #fff;box-shadow:0 4px 12px rgba(37,99,235,0.4)"></div>`,
+        html: `<div class="w-7 h-7 rounded-full rounded-br-none -rotate-45 bg-gradient-to-br from-blue-600 to-blue-800 border-[3px] border-white shadow-lg shadow-blue-500/40"></div>`,
         iconSize: [28, 28],
         iconAnchor: [14, 28],
-        className: "",
-      });
+        className: '',
+      })
 
-      let marker: import("leaflet").Marker | null = null;
+      let marker: import('leaflet').Marker | null = null
 
-      // Place initial marker
-      marker = L.marker([initLat, initLng], { icon }).addTo(map);
-      leafletRef.current = { map, marker, selectedLatLng: { lat: initLat, lng: initLng } };
+      marker = L.marker([initLat, initLng], { icon }).addTo(map)
+      leafletRef.current = { map, marker, selectedLatLng: { lat: initLat, lng: initLng } }
 
-      map.on("click", (e: import("leaflet").LeafletMouseEvent) => {
-        const { lat, lng } = e.latlng;
-        if (marker) marker.remove();
-        marker = L.marker([lat, lng], { icon }).addTo(map);
+      map.on('click', (e: import('leaflet').LeafletMouseEvent) => {
+        const { lat, lng } = e.latlng
+        if (marker) marker.remove()
+        marker = L.marker([lat, lng], { icon }).addTo(map)
         if (leafletRef.current) {
-          leafletRef.current.marker = marker;
-          leafletRef.current.selectedLatLng = { lat, lng };
+          leafletRef.current.marker = marker
+          leafletRef.current.selectedLatLng = { lat, lng }
         }
-      });
+      })
     }
 
-    initMap();
+    initMap()
 
     return () => {
-      isMounted = false;
-      leafletRef.current?.map.remove();
-      leafletRef.current = null;
-    };
-  }, []);
+      isMounted = false
+      leafletRef.current?.map.remove()
+      leafletRef.current = null
+    }
+  }, [coords])
 
   const handleConfirm = () => {
-    const ll = leafletRef.current?.selectedLatLng;
+    const ll = leafletRef.current?.selectedLatLng
     if (ll) {
-      onConfirm(`${ll.lat.toFixed(4)}° N, ${ll.lng.toFixed(4)}° E`);
+      onConfirm(`${ll.lat.toFixed(4)}° N, ${ll.lng.toFixed(4)}° E`)
     }
-    onClose();
-  };
+    onClose()
+  }
 
   return (
     <div
       onClick={onClose}
-      style={{
-        position: "fixed", inset: 0, zIndex: 300,
-        background: "rgba(15,23,42,0.50)",
-        backdropFilter: "blur(4px)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: 24,
-      }}
+      className='fixed inset-0 z-[300] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 md:p-6'
     >
       <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          background: "#fff", borderRadius: 20,
-          boxShadow: "0 32px 80px rgba(0,0,0,0.28)",
-          width: "100%", maxWidth: 640,
-          overflow: "hidden",
-          animation: "modalIn 0.22s ease",
-        }}
+        onClick={(e) => e.stopPropagation()}
+        className='bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200'
       >
-        {/* header */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "20px 24px",
-          borderBottom: "1px solid var(--color-outline-variant)",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: 10, flexShrink: 0,
-              background: "linear-gradient(135deg, var(--color-primary), var(--color-primary-container))",
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              <MapPin size={16} color="#fff" />
+        {/* Header */}
+        <div className='flex items-center justify-between p-4 md:p-6 border-b border-slate-100'>
+          <div className='flex items-center gap-3'>
+            <div className='w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shrink-0 shadow-lg shadow-blue-200'>
+              <MapPin size={18} className='text-white' />
             </div>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 800, color: "var(--color-on-surface)" }}>Select on Map</div>
-              <div style={{ fontSize: 11.5, color: "var(--color-on-surface-variant)" }}>Xaritada joylashuvni tanlang</div>
+              <h2 className='text-sm md:text-base font-extrabold text-slate-900'>Select on Map</h2>
+              <p className='text-[11px] md:text-xs text-slate-500'>Xaritada joylashuvni tanlang</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            style={{
-              background: "var(--color-surface-container-low)", border: "none",
-              borderRadius: 8, padding: "6px 8px", cursor: "pointer",
-              color: "var(--color-on-surface-variant)", display: "flex",
-            }}
+            className='p-2 rounded-lg bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors'
           >
-            <X size={16} />
+            <X size={18} />
           </button>
         </div>
 
-        {/* hint */}
-        <div style={{
-          padding: "10px 24px", fontSize: 12, fontWeight: 500,
-          color: "var(--color-on-surface-variant)",
-          background: "var(--color-surface-container-low)",
-          borderBottom: "1px solid var(--color-outline-variant)",
-        }}>
-          📍 Xaritaning istalgan joyiga bosib koordinatni tanlang
+        {/* Hint bar */}
+        <div className='px-5 py-2.5 bg-slate-50 border-b border-slate-100'>
+          <p className='text-[11px] md:text-xs font-semibold text-slate-500 flex items-center gap-2'>
+            <span role='img' aria-label='pin'>
+              📍
+            </span>
+            Xaritaning istalgan joyiga bosib koordinatni tanlang
+          </p>
         </div>
 
-        {/* map */}
-        <div ref={mapRef} style={{ height: 380, width: "100%" }} />
+        {/* Map Container */}
+        <div ref={mapRef} className='h-[300px] md:h-[400px] w-full z-0' />
 
-        {/* footer */}
-        <div style={{
-          display: "flex", gap: 10, padding: "16px 24px",
-          borderTop: "1px solid var(--color-outline-variant)",
-        }}>
+        {/* Footer */}
+        <div className='flex flex-col sm:flex-row gap-3 p-4 md:p-6 border-t border-slate-100'>
           <button
             onClick={onClose}
-            style={{
-              flex: 1, padding: "11px", borderRadius: 10,
-              border: "1.5px solid var(--color-outline-variant)",
-              background: "transparent", fontSize: 13, fontWeight: 600,
-              color: "var(--color-on-surface-variant)", cursor: "pointer",
-            }}
+            className='flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-500 hover:bg-slate-50 transition-colors'
           >
             Bekor qilish
           </button>
           <button
             onClick={handleConfirm}
-            style={{
-              flex: 1, padding: "11px", borderRadius: 10, border: "none",
-              background: "linear-gradient(135deg, var(--color-primary), var(--color-primary-container))",
-              color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
-              boxShadow: "0 4px 14px rgba(37,99,235,0.28)",
-            }}
+            className='flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 text-white text-sm font-bold shadow-lg shadow-blue-200 hover:from-blue-700 hover:to-blue-800 transition-all active:scale-[0.98]'
           >
             Tasdiqlash
           </button>
         </div>
       </div>
     </div>
-  );
+  )
 }

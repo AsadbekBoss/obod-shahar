@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, KeyboardEvent } from "react";
 import s from "./page.module.css";
+import { useRouter } from 'next/navigation'
 
 /* ── Types ──────────────────────────────────────── */
 interface Toast {
@@ -48,7 +49,36 @@ export default function LoginPage() {
   const [remember, setRemember]       = useState(false);
   const [loading, setLoading]         = useState(false);
   const [toasts, setToasts]           = useState<Toast[]>([]);
-  const toastIdRef                    = useRef(0);
+  const toastIdRef = useRef(0);
+
+  const router = useRouter()
+
+  const handleSubmit = async () => {
+    if (!username.trim()) {
+      addToast('error', "Maydon bo'sh", 'Foydalanuvchi nomini kiriting')
+      return
+    }
+    if (!password) {
+      addToast('error', "Maydon bo'sh", 'Parolni kiriting')
+      return
+    }
+
+    setLoading(true)
+
+    // API so'rovini simulyatsiya qilish
+    await new Promise((r) => setTimeout(r, 1600))
+
+    setLoading(false)
+
+    // Muvaffaqiyatli xabar ko'rsatish
+    addToast('success', 'Muvaffaqiyatli kirish', 'Tizimga xush kelibsiz!')
+
+    // 3. Bir zumda dashboardga o'tkazish
+    // Agar toast ko'rinishini kutmoqchi bo'lsangiz, setTimeout ichiga olishingiz mumkin
+    setTimeout(() => {
+      router.push('/dashboard')
+    }, 500)
+  }
 
   /* auto-advance carousel */
   useEffect(() => {
@@ -65,22 +95,6 @@ export default function LoginPage() {
 
   const removeToast = (id: number) =>
     setToasts(prev => prev.filter(t => t.id !== id));
-
-  /* submit */
-  const handleSubmit = async () => {
-    if (!username.trim()) {
-      addToast("error", "Maydon bo'sh", "Foydalanuvchi nomini kiriting");
-      return;
-    }
-    if (!password) {
-      addToast("error", "Maydon bo'sh", "Parolni kiriting");
-      return;
-    }
-    setLoading(true);
-    await new Promise(r => setTimeout(r, 1600));
-    setLoading(false);
-    addToast("success", "Muvaffaqiyatli kirish", "Tizimga xush kelibsiz!");
-  };
 
   const handleKey = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") handleSubmit();

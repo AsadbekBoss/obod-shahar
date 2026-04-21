@@ -1,66 +1,85 @@
-import { ReactNode } from "react";
-import { TrendingUp, TrendingDown } from "lucide-react";
+'use client'
+
+import { ReactNode } from 'react'
+import { TrendingUp, TrendingDown } from 'lucide-react'
 
 interface KPICardProps {
-  label: string;
-  value: string | number;
-  trend?: { value: string; up: boolean };
-  note?: string;
-  accent?: boolean;
-  icon?: ReactNode;
+  label: string
+  value: string | number
+  trend?: { value: string; up: boolean }
+  note?: string
+  accent?: boolean
+  icon?: ReactNode
 }
 
 export default function KPICard({ label, value, trend, note, accent, icon }: KPICardProps) {
   return (
-    <div style={{
-      background: accent
-        ? "linear-gradient(135deg, var(--color-primary), var(--color-primary-container))"
-        : "rgba(255,255,255,0.82)",
-      backdropFilter: "blur(10px)",
-      WebkitBackdropFilter: "blur(10px)",
-      borderRadius: 22,
-      padding: "22px 24px",
-      display: "flex", flexDirection: "column", gap: 12,
-      border: "1px solid rgba(255,255,255,0.70)",
-      boxShadow: "0 18px 40px rgba(15,23,42,0.10)",
-      color: accent ? "white" : "inherit",
-    }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{
-          fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px",
-          color: accent ? "rgba(255,255,255,0.75)" : "var(--color-on-surface-variant)",
-        }}>
+    <div
+      className={`relative flex flex-col gap-3 overflow-hidden rounded-[22px] border p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl md:p-6 ${
+        accent
+          ? 'border-white/20 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white shadow-xl shadow-blue-500/20'
+          : 'border-white/70 bg-white/82 backdrop-blur-md shadow-lg shadow-slate-900/5'
+      }`}
+    >
+      {/* Sarlavha va Ikonka */}
+      <div className='flex items-center justify-between'>
+        <span
+          className={`text-[10px] font-bold uppercase tracking-wider md:text-[11px] ${
+            accent ? 'text-white/75' : 'text-[var(--color-on-surface-variant)]'
+          }`}
+        >
           {label}
         </span>
         {icon && (
-          <span style={{ color: accent ? "rgba(255,255,255,0.75)" : "var(--color-on-surface-variant)" }}>
+          <div className={accent ? 'text-white/70' : 'text-[var(--color-on-surface-variant)]'}>
             {icon}
-          </span>
+          </div>
         )}
       </div>
-      <div style={{
-        fontSize: 36, fontWeight: 800, lineHeight: 1,
-        color: accent ? "white" : "var(--color-on-surface)",
-        fontFamily: "var(--font-headline)",
-      }}>
+
+      {/* Qiymat (Value) */}
+      <div
+        className={`text-3xl font-extrabold leading-none tracking-tight md:text-4xl ${
+          accent ? 'text-white' : 'text-[var(--color-on-surface)]'
+        }`}
+        style={{ fontFamily: 'var(--font-headline)' }}
+      >
         {value}
       </div>
+
+      {/* Trend va Izoh */}
       {(trend || note) && (
-        <div style={{
-          display: "flex", alignItems: "center", gap: 6, fontSize: 11,
-          color: accent ? "rgba(255,255,255,0.75)" : "var(--color-on-surface-variant)",
-        }}>
+        <div
+          className={`flex items-center flex-wrap gap-1.5 text-[11px] md:text-xs ${
+            accent ? 'text-white/75' : 'text-[var(--color-on-surface-variant)]'
+          }`}
+        >
           {trend && (
-            <>
-              {trend.up ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-              <span style={{ color: trend.up ? (accent ? "rgba(255,255,255,0.9)" : "#16a34a") : "#dc2626" }}>
+            <div className='flex items-center gap-1'>
+              {trend.up ? (
+                <TrendingUp size={14} className={accent ? 'text-white' : 'text-green-600'} />
+              ) : (
+                <TrendingDown size={14} className='text-red-500' />
+              )}
+              <span
+                className={`font-bold ${
+                  trend.up ? (accent ? 'text-white' : 'text-green-600') : 'text-red-500'
+                }`}
+              >
                 {trend.value}
               </span>
-            </>
+            </div>
           )}
-          {note && <span>{note}</span>}
+
+          {trend && note && <span className='opacity-40'>|</span>}
+
+          {note && <span className='font-medium'>{note}</span>}
         </div>
       )}
+
+      {accent && (
+        <div className='absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/10 blur-2xl' />
+      )}
     </div>
-  );
+  )
 }

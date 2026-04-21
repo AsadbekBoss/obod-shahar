@@ -1,543 +1,508 @@
-"use client";
+'use client'
 
-import { useState, useRef } from "react";
-import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
-import Header from "@/components/layout/Header";
-import { Save, Trash2, Truck, MapPin, Search, Plus, ChevronDown, X, Check, AlertCircle } from "lucide-react";
+import { useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
+import Header from '@/components/layout/Header'
+import {
+  Save,
+  Trash2,
+  Truck,
+  MapPin,
+  Search,
+  Plus,
+  ChevronDown,
+  X,
+  Check,
+  AlertCircle,
+} from 'lucide-react'
 
-const MapPickerModal = dynamic(() => import("./MapPickerModal"), { ssr: false });
+const MapPickerModal = dynamic(() => import('./MapPickerModal'), { ssr: false })
 
 /* ── Data ─────────────────────────────────────── */
-const regions = ["Samarkand City", "Pastdargom", "Urgut", "Bulungur", "Kattakurgan"];
+const regions = ['Samarkand City', 'Pastdargom', 'Urgut', 'Bulungur', 'Kattakurgan']
 const districts: Record<string, string[]> = {
-  "Samarkand City": ["Registan", "Siyob", "Dagbit", "Bulungur Rd"],
-  "Pastdargom":     ["Juma", "Oqdaryo", "Chelak"],
-  "Urgut":          ["Urgut Center", "Yangi Urgut"],
-  "Bulungur":       ["Bulungur Center", "Yangi Turmush"],
-  "Kattakurgan":    ["Kattakurgan Center", "Arnasoy"],
-};
+  'Samarkand City': ['Registan', 'Siyob', 'Dagbit', 'Bulungur Rd'],
+  Pastdargom: ['Juma', 'Oqdaryo', 'Chelak'],
+  Urgut: ['Urgut Center', 'Yangi Urgut'],
+  Bulungur: ['Bulungur Center', 'Yangi Turmush'],
+  Kattakurgan: ['Kattakurgan Center', 'Arnasoy'],
+}
 const allVehicles = [
-  { plate: "01 A 777 AA", driver: "Alisher Usmanov" },
-  { plate: "10 B 924 OA", driver: "Rustam Karimov" },
-  { plate: "01 H 456 AA", driver: "Bekzod Nazarov" },
-  { plate: "01 Z 121 BB", driver: "Jasur Tulyaganov" },
-  { plate: "05 B 555 BB", driver: "Dilshod Karimov" },
-];
+  { plate: '01 A 777 AA', driver: 'Alisher Usmanov' },
+  { plate: '10 B 924 OA', driver: 'Rustam Karimov' },
+  { plate: '01 H 456 AA', driver: 'Bekzod Nazarov' },
+  { plate: '01 Z 121 BB', driver: 'Jasur Tulyaganov' },
+  { plate: '05 B 555 BB', driver: 'Dilshod Karimov' },
+]
 
-/* ── Shared styles ────────────────────────────── */
-const cardStyle: React.CSSProperties = {
-  background: "rgba(255,255,255,0.88)",
-  backdropFilter: "blur(10px)",
-  WebkitBackdropFilter: "blur(10px)",
-  border: "1px solid rgba(255,255,255,0.70)",
-  boxShadow: "0 8px 32px rgba(15,23,42,0.08)",
-  borderRadius: 18,
-};
-const labelStyle: React.CSSProperties = {
-  fontSize: 10, fontWeight: 700, textTransform: "uppercase",
-  letterSpacing: "0.6px", color: "var(--color-on-surface-variant)",
-  marginBottom: 6, display: "block",
-};
-const inputStyle: React.CSSProperties = {
-  width: "100%", padding: "11px 14px", fontSize: 13, fontFamily: "inherit",
-  fontWeight: 500, border: "1.5px solid var(--color-outline-variant)",
-  borderRadius: 10, background: "var(--color-surface-container-low)",
-  color: "var(--color-on-surface)", outline: "none", boxSizing: "border-box",
-};
-const sectionBadge: React.CSSProperties = {
-  width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-  background: "var(--color-surface-container-high)",
-  display: "flex", alignItems: "center", justifyContent: "center",
-  fontSize: 11, fontWeight: 800, color: "var(--color-on-surface-variant)",
-};
+/* ── Components ───────────────────────────────── */
 
-/* ── Assign Vehicle Modal ─────────────────────── */
 function AssignVehicleModal({
-  assigned, onClose, onSave,
+  assigned,
+  onClose,
+  onSave,
 }: {
-  assigned: string[];
-  onClose: () => void;
-  onSave: (plates: string[]) => void;
+  assigned: string[]
+  onClose: () => void
+  onSave: (plates: string[]) => void
 }) {
-  const [search, setSearch] = useState("");
-  // start with already assigned ones checked
-  const [checked, setChecked] = useState<string[]>([...assigned]);
+  const [search, setSearch] = useState('')
+  const [checked, setChecked] = useState<string[]>([...assigned])
 
   const toggle = (plate: string) =>
-    setChecked(prev =>
-      prev.includes(plate) ? prev.filter(p => p !== plate) : [...prev, plate]
-    );
+    setChecked((prev) =>
+      prev.includes(plate) ? prev.filter((p) => p !== plate) : [...prev, plate]
+    )
 
-  const filtered = allVehicles.filter(v =>
-    v.plate.toLowerCase().includes(search.toLowerCase()) ||
-    v.driver.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = allVehicles.filter(
+    (v) =>
+      v.plate.toLowerCase().includes(search.toLowerCase()) ||
+      v.driver.toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
     <div
+      className='fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/45 backdrop-blur-sm p-4 md:p-6'
       onClick={onClose}
-      style={{
-        position: "fixed", inset: 0, zIndex: 200,
-        background: "rgba(15,23,42,0.45)",
-        backdropFilter: "blur(4px)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: 24,
-      }}
     >
       <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          background: "#fff", borderRadius: 20,
-          boxShadow: "0 32px 80px rgba(0,0,0,0.24)",
-          width: "100%", maxWidth: 480,
-          animation: "modalIn 0.22s ease",
-        }}
+        className='bg-white rounded-2xl shadow-2xl w-full max-w-lg animate-in fade-in zoom-in-95 duration-200'
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* header */}
-        <div style={{ padding: "26px 28px 18px" }}>
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+        <div className='p-6 md:p-7 pb-4'>
+          <div className='flex items-start justify-between'>
             <div>
-              <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--color-on-surface)", margin: "0 0 4px" }}>
-                Assign Vehicle
-              </h2>
-              <p style={{ fontSize: 12.5, color: "var(--color-on-surface-variant)", margin: 0 }}>
-                Allocate an available asset to the current operation.
+              <h2 className='text-lg font-extrabold text-slate-900'>Assign Vehicle</h2>
+              <p className='text-xs text-slate-500 mt-1'>
+                Allocate an available asset to the operation.
               </p>
             </div>
-            <button onClick={onClose} style={{
-              background: "var(--color-surface-container-low)", border: "none",
-              borderRadius: 8, padding: "6px 8px", cursor: "pointer",
-              color: "var(--color-on-surface-variant)", display: "flex",
-            }}>
-              <X size={16} />
+            <button
+              onClick={onClose}
+              className='p-2 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors'
+            >
+              <X size={18} />
             </button>
           </div>
 
-          {/* search */}
-          <div style={{ position: "relative", marginTop: 16 }}>
-            <Search size={13} style={{
-              position: "absolute", left: 12, top: "50%",
-              transform: "translateY(-50%)", color: "var(--color-on-surface-variant)", pointerEvents: "none",
-            }} />
+          <div className='relative mt-4'>
+            <Search size={14} className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400' />
             <input
-              type="text"
-              placeholder="Search by registration number or driver name"
+              type='text'
+              placeholder='Search registration or driver...'
               value={search}
-              onChange={e => setSearch(e.target.value)}
-              style={{ ...inputStyle, paddingLeft: 36, fontSize: 12.5 }}
+              onChange={(e) => setSearch(e.target.value)}
+              className='w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all'
             />
           </div>
         </div>
 
-        {/* list */}
-        <div style={{ padding: "0 28px 4px" }}>
-          <span style={{ ...labelStyle, marginBottom: 10 }}>Available Fleet Units</span>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 300, overflowY: "auto" }}>
-            {filtered.map(v => {
-              const isChecked = checked.includes(v.plate);
+        <div className='px-6 md:px-7'>
+          <span className='text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-3'>
+            Available Fleet Units
+          </span>
+          <div className='flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1'>
+            {filtered.map((v) => {
+              const isChecked = checked.includes(v.plate)
               return (
                 <button
                   key={v.plate}
                   onClick={() => toggle(v.plate)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 14,
-                    padding: "13px 14px", borderRadius: 12, cursor: "pointer",
-                    border: isChecked
-                      ? "2px solid var(--color-primary)"
-                      : "1.5px solid var(--color-outline-variant)",
-                    background: isChecked ? "rgba(37,99,235,0.05)" : "#fff",
-                    textAlign: "left", transition: "all 0.13s",
-                  }}
+                  className={`flex items-center gap-4 p-3 rounded-xl border transition-all text-left ${
+                    isChecked
+                      ? 'border-blue-600 bg-blue-50/50'
+                      : 'border-slate-100 bg-white hover:border-slate-300'
+                  }`}
                 >
-                  <div style={{
-                    width: 38, height: 38, borderRadius: 10, flexShrink: 0,
-                    background: isChecked ? "rgba(37,99,235,0.10)" : "var(--color-surface-container-low)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                  }}>
-                    <Truck size={17} style={{ color: isChecked ? "var(--color-primary)" : "var(--color-on-surface-variant)" }} />
+                  <div
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isChecked ? 'bg-blue-100' : 'bg-slate-100'}`}
+                  >
+                    <Truck size={18} className={isChecked ? 'text-blue-600' : 'text-slate-400'} />
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--color-on-surface)" }}>{v.plate}</div>
-                    <div style={{ fontSize: 11.5, color: "var(--color-on-surface-variant)", marginTop: 1 }}>
-                      Driver: {v.driver}
-                    </div>
+                  <div className='flex-1'>
+                    <div className='text-sm font-bold text-slate-900'>{v.plate}</div>
+                    <div className='text-[11px] text-slate-500'>Driver: {v.driver}</div>
                   </div>
-                  {/* checkbox */}
-                  <div style={{
-                    width: 20, height: 20, borderRadius: 6, flexShrink: 0,
-                    border: isChecked ? "none" : "2px solid var(--color-outline)",
-                    background: isChecked
-                      ? "linear-gradient(135deg, var(--color-primary), var(--color-primary-container))"
-                      : "#fff",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    transition: "all 0.13s",
-                    boxShadow: isChecked ? "0 2px 8px rgba(37,99,235,0.28)" : "none",
-                  }}>
-                    {isChecked && <Check size={12} color="#fff" strokeWidth={3} />}
+                  <div
+                    className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all ${
+                      isChecked
+                        ? 'bg-blue-600 border-transparent shadow-sm shadow-blue-200'
+                        : 'bg-white border-slate-300'
+                    }`}
+                  >
+                    {isChecked && <Check size={12} className='text-white' strokeWidth={4} />}
                   </div>
                 </button>
-              );
+              )
             })}
           </div>
         </div>
 
-        {/* footer */}
-        <div style={{
-          padding: "16px 28px 24px",
-          borderTop: "1px solid var(--color-outline-variant)",
-          marginTop: 12,
-          display: "flex", gap: 10,
-        }}>
-          <button onClick={onClose} style={{
-            flex: 1, padding: "11px", borderRadius: 10,
-            border: "1.5px solid var(--color-outline-variant)",
-            background: "transparent", fontSize: 13, fontWeight: 600,
-            color: "var(--color-on-surface-variant)", cursor: "pointer",
-          }}>
-            Cancel and Go Back
+        <div className='p-6 md:p-7 border-t border-slate-100 mt-4 flex flex-col sm:flex-row gap-3'>
+          <button
+            onClick={onClose}
+            className='flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors'
+          >
+            Cancel
           </button>
           <button
-            onClick={() => { onSave(checked); onClose(); }}
-            style={{
-              flex: 1, padding: "11px", borderRadius: 10, border: "none",
-              fontSize: 13, fontWeight: 700, cursor: "pointer",
-              background: checked.length > 0
-                ? "linear-gradient(135deg, var(--color-primary), var(--color-primary-container))"
-                : "var(--color-surface-container-high)",
-              color: checked.length > 0 ? "#fff" : "var(--color-on-surface-variant)",
-              boxShadow: checked.length > 0 ? "0 4px 14px rgba(37,99,235,0.28)" : "none",
-              transition: "all 0.15s",
+            onClick={() => {
+              onSave(checked)
+              onClose()
             }}
+            className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg ${
+              checked.length > 0
+                ? 'bg-blue-600 text-white shadow-blue-200 hover:bg-blue-700'
+                : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+            }`}
           >
-            {checked.length > 0 ? `Assign ${checked.length} Vehicle${checked.length > 1 ? "s" : ""}` : "Assign Vehicle"}
+            {checked.length > 0
+              ? `Assign ${checked.length} Vehicle${checked.length > 1 ? 's' : ''}`
+              : 'Assign Vehicle'}
           </button>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-/* ── Main Page ────────────────────────────────── */
 export default function RegisterBinPage() {
-  const router = useRouter();
-  const [tab, setTab]             = useState<"bin" | "vehicle">("bin");
-  const [region, setRegion]       = useState("Samarkand City");
-  const [district, setDistrict]   = useState("Registan");
-  const [mahalla, setMahalla]     = useState("");
-  const [coords, setCoords]       = useState("39.6547° N, 66.9758° E");
-  const [cameraId, setCameraId]   = useState("");
-  const [binCount, setBinCount]   = useState("");
-  const [assigned, setAssigned]   = useState<string[]>([]);
-  const [showVehicleModal, setShowVehicleModal] = useState(false);
-  const [showMapModal, setShowMapModal]         = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Record<string, boolean>>({});
+  const router = useRouter()
+  const [tab, setTab] = useState<'bin' | 'vehicle'>('bin')
+  const [region, setRegion] = useState('Samarkand City')
+  const [district, setDistrict] = useState('Registan')
+  const [mahalla, setMahalla] = useState('')
+  const [coords, setCoords] = useState('39.6547° N, 66.9758° E')
+  const [cameraId, setCameraId] = useState('')
+  const [binCount, setBinCount] = useState('')
+  const [assigned, setAssigned] = useState<string[]>([])
+  const [showVehicleModal, setShowVehicleModal] = useState(false)
+  const [showMapModal, setShowMapModal] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [errors, setErrors] = useState<Record<string, boolean>>({})
 
   const refs = {
-    mahalla:  useRef<HTMLInputElement>(null),
+    mahalla: useRef<HTMLInputElement>(null),
     cameraId: useRef<HTMLInputElement>(null),
     binCount: useRef<HTMLInputElement>(null),
     vehicles: useRef<HTMLDivElement>(null),
-  };
+  }
 
-  const clearError = (key: string) =>
-    setErrors(prev => ({ ...prev, [key]: false }));
+  const clearError = (key: string) => setErrors((prev) => ({ ...prev, [key]: false }))
 
   const handleSubmit = async () => {
     const newErrors: Record<string, boolean> = {
-      mahalla:  !mahalla.trim(),
+      mahalla: !mahalla.trim(),
       cameraId: !cameraId.trim(),
       binCount: !binCount.trim(),
       vehicles: assigned.length === 0,
-    };
-    setErrors(newErrors);
+    }
+    setErrors(newErrors)
 
-    const firstError = Object.entries(newErrors).find(([, v]) => v)?.[0];
+    const firstError = Object.entries(newErrors).find(([, v]) => v)?.[0]
     if (firstError) {
-      const el = refs[firstError as keyof typeof refs]?.current;
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-        if ("focus" in el) (el as HTMLInputElement).focus();
-      }
-      return;
+      const el = refs[firstError as keyof typeof refs]?.current
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      if (el && 'focus' in el) (el as HTMLInputElement).focus()
+      return
     }
 
-    setSubmitting(true);
-    await new Promise(r => setTimeout(r, 1400));
-    setSubmitting(false);
-    router.push("/trash-bins");
-  };
+    setSubmitting(true)
+    await new Promise((r) => setTimeout(r, 1400))
+    setSubmitting(false)
+    router.push('/trash-bins')
+  }
+
+  // Shared Tailwind Class Helpers
+  const labelClass = (errKey?: string) =>
+    `text-[10px] font-bold uppercase tracking-wider mb-1.5 block ${errors[errKey || ''] ? 'text-red-500' : 'text-slate-500'}`
+  const inputClass = (errKey?: string) =>
+    `w-full px-4 py-2.5 text-sm font-medium border rounded-xl bg-slate-50/50 outline-none transition-all ${
+      errors[errKey || '']
+        ? 'border-red-500 bg-red-50 ring-2 ring-red-100'
+        : 'border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10'
+    }`
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+    <div className='flex flex-col min-h-screen bg-slate-50'>
       <Header
-        title="New Asset Registration"
-        subtitle="Create and catalog new permanent infrastructure or fleet assets within the municipal ledger"
+        title='New Asset Registration'
+        subtitle='Create and catalog new permanent infrastructure or fleet assets'
       />
 
-      <div style={{ padding: "24px 28px 40px", display: "flex", flexDirection: "column", gap: 20 }}>
-
+      <main className='p-4 md:p-8 flex flex-col gap-6 max-w-5xl mx-auto w-full'>
         {/* ── Tabs ── */}
-        <div style={{ display: "flex", gap: 10 }}>
-          {([
-            { key: "bin",     icon: Trash2, label: "Register Trash Bin" },
-            { key: "vehicle", icon: Truck,  label: "Register Vehicle"   },
-          ] as const).map(({ key, icon: Icon, label }) => (
-            <button key={key} onClick={() => setTab(key)} style={{
-              display: "flex", alignItems: "center", gap: 8,
-              padding: "10px 20px", borderRadius: 12,
-              fontSize: 13, fontWeight: 700, cursor: "pointer",
-              border: tab === key ? "none" : "1.5px solid var(--color-outline-variant)",
-              background: tab === key
-                ? "linear-gradient(135deg, var(--color-primary), var(--color-primary-container))"
-                : "rgba(255,255,255,0.80)",
-              color: tab === key ? "#fff" : "var(--color-on-surface-variant)",
-              boxShadow: tab === key ? "0 6px 20px rgba(37,99,235,0.28)" : "none",
-              transition: "all 0.18s",
-            }}>
-              <Icon size={14} strokeWidth={2} />
+        <div className='flex flex-wrap gap-3'>
+          {[
+            { key: 'bin', icon: Trash2, label: 'Register Trash Bin' },
+            { key: 'vehicle', icon: Truck, label: 'Register Vehicle' },
+          ].map(({ key, icon: Icon, label }) => (
+            <button
+              key={key}
+              onClick={() => setTab(key as any)}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                tab === key
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
+                  : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-300'
+              }`}
+            >
+              <Icon size={16} />
               {label}
             </button>
           ))}
         </div>
 
-        {/* ── Form card ── */}
-        <div style={{ ...cardStyle, padding: "0 0 32px" }}>
-
-          {/* 01 Geospatial */}
-          <div style={{ padding: "28px 32px 24px", borderBottom: "1px solid var(--color-outline-variant)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-              <div style={sectionBadge}>01</div>
-              <h2 style={{ fontSize: 16, fontWeight: 800, color: "var(--color-on-surface)", margin: 0 }}>
-                Geospatial Identity
-              </h2>
+        {/* ── Form Card ── */}
+        <div className='bg-white/90 backdrop-blur-md border border-white rounded-[24px] shadow-xl shadow-slate-200/50 overflow-hidden'>
+          {/* Section 01 */}
+          <section className='p-6 md:p-8 border-b border-slate-100'>
+            <div className='flex items-center gap-3 mb-6'>
+              <div className='w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-[11px] font-black text-slate-500'>
+                01
+              </div>
+              <h2 className='text-base font-extrabold text-slate-900'>Geospatial Identity</h2>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'>
               <div>
-                <span style={labelStyle}>Region</span>
-                <div style={{ position: "relative" }}>
-                  <select value={region} onChange={e => { setRegion(e.target.value); setDistrict(districts[e.target.value]?.[0] ?? ""); }}
-                    style={{ ...inputStyle, appearance: "none", paddingRight: 36, cursor: "pointer" }}>
-                    {regions.map(r => <option key={r}>{r}</option>)}
+                <label className={labelClass()}>Region</label>
+                <div className='relative'>
+                  <select
+                    value={region}
+                    onChange={(e) => {
+                      setRegion(e.target.value)
+                      setDistrict(districts[e.target.value]?.[0] ?? '')
+                    }}
+                    className={`${inputClass()} appearance-none cursor-pointer pr-10`}
+                  >
+                    {regions.map((r) => (
+                      <option key={r}>{r}</option>
+                    ))}
                   </select>
-                  <ChevronDown size={14} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "var(--color-on-surface-variant)", pointerEvents: "none" }} />
+                  <ChevronDown
+                    size={16}
+                    className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none'
+                  />
                 </div>
               </div>
               <div>
-                <span style={labelStyle}>District</span>
-                <div style={{ position: "relative" }}>
-                  <select value={district} onChange={e => setDistrict(e.target.value)}
-                    style={{ ...inputStyle, appearance: "none", paddingRight: 36, cursor: "pointer" }}>
-                    {(districts[region] ?? []).map(d => <option key={d}>{d}</option>)}
+                <label className={labelClass()}>District</label>
+                <div className='relative'>
+                  <select
+                    value={district}
+                    onChange={(e) => setDistrict(e.target.value)}
+                    className={`${inputClass()} appearance-none cursor-pointer pr-10`}
+                  >
+                    {(districts[region] ?? []).map((d) => (
+                      <option key={d}>{d}</option>
+                    ))}
                   </select>
-                  <ChevronDown size={14} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "var(--color-on-surface-variant)", pointerEvents: "none" }} />
+                  <ChevronDown
+                    size={16}
+                    className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none'
+                  />
                 </div>
               </div>
             </div>
 
-            <div style={{ marginBottom: 16 }}>
-              <span style={{ ...labelStyle, color: errors.mahalla ? "#ef4444" : "var(--color-on-surface-variant)" }}>
-                Mahalla {errors.mahalla && "— majburiy maydon"}
-              </span>
-              <div style={{ position: "relative" }}>
-                <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: errors.mahalla ? "#ef4444" : "var(--color-on-surface-variant)", pointerEvents: "none" }} />
+            <div className='mb-4'>
+              <label className={labelClass('mahalla')}>
+                Mahalla {errors.mahalla && '— required'}
+              </label>
+              <div className='relative'>
+                <Search
+                  size={16}
+                  className={`absolute left-3 top-1/2 -translate-y-1/2 ${errors.mahalla ? 'text-red-400' : 'text-slate-400'}`}
+                />
                 <input
                   ref={refs.mahalla}
-                  type="text" placeholder="Search Mahalla..." value={mahalla}
-                  onChange={e => { setMahalla(e.target.value); clearError("mahalla"); }}
-                  style={{
-                    ...inputStyle, paddingLeft: 36,
-                    borderColor: errors.mahalla ? "#ef4444" : "var(--color-outline-variant)",
-                    background: errors.mahalla ? "#fff5f5" : "var(--color-surface-container-low)",
-                    boxShadow: errors.mahalla ? "0 0 0 3px rgba(239,68,68,0.12)" : "none",
+                  type='text'
+                  placeholder='Search Mahalla...'
+                  value={mahalla}
+                  onChange={(e) => {
+                    setMahalla(e.target.value)
+                    clearError('mahalla')
                   }}
+                  className={`${inputClass('mahalla')} pl-10`}
                 />
-                {errors.mahalla && <AlertCircle size={14} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "#ef4444" }} />}
+                {errors.mahalla && (
+                  <AlertCircle
+                    size={16}
+                    className='absolute right-3 top-1/2 -translate-y-1/2 text-red-500'
+                  />
+                )}
               </div>
             </div>
 
             <div>
-              <span style={labelStyle}>Map Coordinates</span>
-              <div style={{ display: "flex", gap: 10 }}>
-                <input type="text" value={coords} onChange={e => setCoords(e.target.value)}
-                  style={{ ...inputStyle, flex: 1, fontFamily: "monospace", fontSize: 12.5 }} />
+              <label className={labelClass()}>Map Coordinates</label>
+              <div className='flex flex-col sm:flex-row gap-3'>
+                <input
+                  type='text'
+                  value={coords}
+                  readOnly
+                  className={`${inputClass()} flex-1 font-mono text-xs`}
+                />
                 <button
                   onClick={() => setShowMapModal(true)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 7,
-                    padding: "0 18px", borderRadius: 10, flexShrink: 0,
-                    background: "linear-gradient(135deg, var(--color-primary), var(--color-primary-container))",
-                    color: "#fff", fontSize: 12.5, fontWeight: 700,
-                    border: "none", cursor: "pointer", whiteSpace: "nowrap",
-                    boxShadow: "0 4px 14px rgba(37,99,235,0.28)",
-                  }}
+                  className='flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all whitespace-nowrap'
                 >
-                  <MapPin size={13} /> Select on Map
+                  <MapPin size={16} /> Select on Map
                 </button>
               </div>
             </div>
-          </div>
+          </section>
 
-          {/* 02 Technical */}
-          <div style={{ padding: "28px 32px 24px", borderBottom: "1px solid var(--color-outline-variant)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-              <div style={sectionBadge}>02</div>
-              <h2 style={{ fontSize: 16, fontWeight: 800, color: "var(--color-on-surface)", margin: 0 }}>
-                Technical &amp; Monitoring
-              </h2>
+          {/* Section 02 */}
+          <section className='p-6 md:p-8 border-b border-slate-100'>
+            <div className='flex items-center gap-3 mb-6'>
+              <div className='w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-[11px] font-black text-slate-500'>
+                02
+              </div>
+              <h2 className='text-base font-extrabold text-slate-900'>Technical & Monitoring</h2>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <div>
-                <span style={{ ...labelStyle, color: errors.cameraId ? "#ef4444" : "var(--color-on-surface-variant)" }}>
-                  Camera Identification Number (ID) {errors.cameraId && "— majburiy"}
-                </span>
-                <div style={{ position: "relative" }}>
+                <label className={labelClass('cameraId')}>
+                  Camera ID {errors.cameraId && '— required'}
+                </label>
+                <div className='relative'>
                   <input
                     ref={refs.cameraId}
-                    type="text" placeholder="CAM-XXXX-000" value={cameraId}
-                    onChange={e => { setCameraId(e.target.value); clearError("cameraId"); }}
-                    style={{
-                      ...inputStyle,
-                      borderColor: errors.cameraId ? "#ef4444" : "var(--color-outline-variant)",
-                      background: errors.cameraId ? "#fff5f5" : "var(--color-surface-container-low)",
-                      boxShadow: errors.cameraId ? "0 0 0 3px rgba(239,68,68,0.12)" : "none",
+                    type='text'
+                    placeholder='CAM-XXXX-000'
+                    value={cameraId}
+                    onChange={(e) => {
+                      setCameraId(e.target.value)
+                      clearError('cameraId')
                     }}
+                    className={inputClass('cameraId')}
                   />
-                  {errors.cameraId && <AlertCircle size={14} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "#ef4444" }} />}
+                  {errors.cameraId && (
+                    <AlertCircle
+                      size={16}
+                      className='absolute right-3 top-1/2 -translate-y-1/2 text-red-500'
+                    />
+                  )}
                 </div>
               </div>
               <div>
-                <span style={{ ...labelStyle, color: errors.binCount ? "#ef4444" : "var(--color-on-surface-variant)" }}>
-                  Qutilar soni {errors.binCount && "— majburiy"}
-                </span>
-                <div style={{ position: "relative" }}>
+                <label className={labelClass('binCount')}>
+                  Bin Count {errors.binCount && '— required'}
+                </label>
+                <div className='relative'>
                   <input
                     ref={refs.binCount}
-                    type="number" placeholder="e.g. 4" value={binCount}
-                    onChange={e => { setBinCount(e.target.value); clearError("binCount"); }}
-                    style={{
-                      ...inputStyle,
-                      borderColor: errors.binCount ? "#ef4444" : "var(--color-outline-variant)",
-                      background: errors.binCount ? "#fff5f5" : "var(--color-surface-container-low)",
-                      boxShadow: errors.binCount ? "0 0 0 3px rgba(239,68,68,0.12)" : "none",
+                    type='number'
+                    placeholder='e.g. 4'
+                    value={binCount}
+                    onChange={(e) => {
+                      setBinCount(e.target.value)
+                      clearError('binCount')
                     }}
+                    className={inputClass('binCount')}
                   />
-                  {errors.binCount && <AlertCircle size={14} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "#ef4444" }} />}
+                  {errors.binCount && (
+                    <AlertCircle
+                      size={16}
+                      className='absolute right-3 top-1/2 -translate-y-1/2 text-red-500'
+                    />
+                  )}
                 </div>
               </div>
             </div>
-          </div>
+          </section>
 
-          {/* 03 Personnel */}
-          <div style={{ padding: "28px 32px 0" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-              <div style={sectionBadge}>03</div>
-              <h2 style={{ fontSize: 16, fontWeight: 800, color: "var(--color-on-surface)", margin: 0 }}>
-                Personnel Assignment
-              </h2>
+          {/* Section 03 */}
+          <section className='p-6 md:p-8'>
+            <div className='flex items-center gap-3 mb-6'>
+              <div className='w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-[11px] font-black text-slate-500'>
+                03
+              </div>
+              <h2 className='text-base font-extrabold text-slate-900'>Personnel Assignment</h2>
             </div>
-            <span style={{ ...labelStyle, color: errors.vehicles ? "#ef4444" : "var(--color-on-surface-variant)" }}>
-              Responsible Vehicle(s) {errors.vehicles && "— kamida bitta mashina tanlang"}
-            </span>
-            <div ref={refs.vehicles} style={{
-              display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center",
-              padding: errors.vehicles ? "12px" : "0",
-              borderRadius: errors.vehicles ? 14 : 0,
-              border: errors.vehicles ? "2px dashed #ef4444" : "2px dashed transparent",
-              background: errors.vehicles ? "rgba(239,68,68,0.04)" : "transparent",
-              transition: "all 0.2s",
-            }}>
-              {assigned.map(plate => {
-                const v = allVehicles.find(v => v.plate === plate)!;
+            <label className={labelClass('vehicles')}>
+              Responsible Vehicle(s) {errors.vehicles && '— select at least one'}
+            </label>
+            <div
+              ref={refs.vehicles}
+              className={`flex flex-wrap gap-3 items-center p-1 transition-all ${
+                errors.vehicles
+                  ? 'p-4 border-2 border-dashed border-red-200 bg-red-50/30 rounded-2xl'
+                  : ''
+              }`}
+            >
+              {assigned.map((plate) => {
+                const v = allVehicles.find((v) => v.plate === plate)!
                 return (
-                  <div key={plate} style={{
-                    display: "flex", alignItems: "center", gap: 12,
-                    padding: "13px 14px", borderRadius: 14,
-                    border: "2px solid var(--color-primary)",
-                    background: "rgba(37,99,235,0.05)", minWidth: 200,
-                  }}>
-                    <div style={{
-                      width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                      background: "rgba(37,99,235,0.12)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>
-                      <Truck size={16} style={{ color: "var(--color-primary)" }} />
+                  <div
+                    key={plate}
+                    className='flex items-center gap-3 p-3 pr-2 rounded-xl border-2 border-blue-600 bg-blue-50/50 min-w-[200px] animate-in zoom-in-95'
+                  >
+                    <div className='w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600'>
+                      <Truck size={18} />
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--color-on-surface)" }}>{v.plate}</div>
-                      <div style={{ fontSize: 11, color: "var(--color-on-surface-variant)", marginTop: 1 }}>{v.driver}</div>
+                    <div className='flex-1'>
+                      <div className='text-sm font-bold text-slate-900'>{v.plate}</div>
+                      <div className='text-[11px] text-slate-500'>{v.driver}</div>
                     </div>
                     <button
-                      onClick={() => setAssigned(prev => prev.filter(p => p !== plate))}
-                      style={{
-                        width: 24, height: 24, borderRadius: 6, flexShrink: 0,
-                        background: "rgba(239,68,68,0.10)", border: "none",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        cursor: "pointer", color: "#ef4444",
-                      }}
+                      onClick={() => setAssigned((prev) => prev.filter((p) => p !== plate))}
+                      className='w-7 h-7 rounded-lg hover:bg-red-100 flex items-center justify-center text-red-500 transition-colors'
                     >
-                      <X size={13} />
+                      <X size={14} />
                     </button>
                   </div>
-                );
+                )
               })}
 
-              <button onClick={() => setShowVehicleModal(true)} style={{
-                display: "flex", alignItems: "center", gap: 8,
-                padding: "14px 22px", borderRadius: 14, cursor: "pointer",
-                border: "1.5px dashed var(--color-outline-variant)",
-                background: "transparent", fontSize: 13, fontWeight: 600,
-                color: "var(--color-on-surface-variant)",
-                minWidth: 180, justifyContent: "center",
-              }}>
-                <Plus size={15} /> Assign New Vehicle
+              <button
+                onClick={() => setShowVehicleModal(true)}
+                className='flex items-center gap-2 px-6 py-4 rounded-xl border-2 border-dashed border-slate-200 text-slate-400 font-bold text-sm hover:border-slate-300 hover:bg-slate-50 transition-all min-w-[200px] justify-center'
+              >
+                <Plus size={18} /> Assign Vehicle
               </button>
             </div>
-          </div>
+          </section>
         </div>
 
-        {/* ── Footer ── */}
-        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 12 }}>
-          <button onClick={() => router.push("/trash-bins")} style={{
-            padding: "11px 24px", borderRadius: 999, fontSize: 13, fontWeight: 600,
-            border: "1.5px solid var(--color-outline-variant)",
-            background: "transparent", color: "var(--color-on-surface-variant)",
-            cursor: "pointer", display: "flex", alignItems: "center", gap: 7,
-          }}>
-            <X size={14} /> Discard Draft
+        {/* ── Footer Actions ── */}
+        <div className='flex flex-col sm:flex-row justify-end items-center gap-4 mt-2'>
+          <button
+            onClick={() => router.push('/trash-bins')}
+            className='w-full sm:w-auto px-8 py-3 rounded-full text-sm font-bold border border-slate-200 text-slate-500 hover:bg-white transition-colors flex items-center justify-center gap-2'
+          >
+            <X size={16} /> Discard Draft
           </button>
-          <button onClick={handleSubmit} disabled={submitting} style={{
-            padding: "11px 28px", borderRadius: 999, fontSize: 13, fontWeight: 700,
-            border: "none", cursor: submitting ? "not-allowed" : "pointer",
-            background: "linear-gradient(135deg, var(--color-primary), var(--color-primary-container))",
-            color: "#fff", display: "flex", alignItems: "center", gap: 8,
-            boxShadow: "0 6px 20px rgba(37,99,235,0.30)",
-            opacity: submitting ? 0.75 : 1, transition: "opacity 0.15s",
-          }}>
+          <button
+            onClick={handleSubmit}
+            disabled={submitting}
+            className='w-full sm:w-auto px-10 py-3 rounded-full text-sm font-bold bg-blue-600 text-white shadow-xl shadow-blue-200 hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2'
+          >
             {submitting ? (
               <>
-                <span style={{
-                  width: 14, height: 14, borderRadius: "50%",
-                  border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff",
-                  animation: "spin 0.65s linear infinite", display: "inline-block",
-                }} />
-                Saving…
+                <div className='w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin' />
+                Saving...
               </>
             ) : (
-              <><Save size={14} /> Register Asset</>
+              <>
+                <Save size={16} /> Register Asset
+              </>
             )}
           </button>
         </div>
-      </div>
+      </main>
 
-      {/* ── Modals ── */}
+      {/* Modals */}
       {showVehicleModal && (
         <AssignVehicleModal
           assigned={assigned}
           onClose={() => setShowVehicleModal(false)}
-          onSave={plates => { setAssigned(plates); if (plates.length > 0) clearError("vehicles"); }}
+          onSave={(plates) => {
+            setAssigned(plates)
+            if (plates.length > 0) clearError('vehicles')
+          }}
         />
       )}
 
@@ -545,14 +510,9 @@ export default function RegisterBinPage() {
         <MapPickerModal
           coords={coords}
           onClose={() => setShowMapModal(false)}
-          onConfirm={newCoords => setCoords(newCoords)}
+          onConfirm={(newCoords) => setCoords(newCoords)}
         />
       )}
-
-      <style>{`
-        @keyframes spin    { to { transform: rotate(360deg); } }
-        @keyframes modalIn { from { opacity:0; transform:scale(0.96) translateY(8px); } to { opacity:1; transform:scale(1) translateY(0); } }
-      `}</style>
     </div>
-  );
+  )
 }

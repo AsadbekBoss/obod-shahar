@@ -1,89 +1,49 @@
-"use client";
+'use client'
 
-import { Bell, Search } from "lucide-react";
+import Link from 'next/link'
 
 interface HeaderProps {
-  title: string;
-  subtitle?: string;
+  title: string
+  subtitle?: string
 }
 
 export default function Header({ title, subtitle }: HeaderProps) {
   return (
-    <header style={{
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-      padding: "12px 24px",
-      margin: "10px 10px 0",
-      background: "rgba(255,255,255,0.76)",
-      backdropFilter: "blur(14px)",
-      WebkitBackdropFilter: "blur(14px)",
-      borderRadius: 22,
-      border: "1px solid rgba(255,255,255,0.70)",
-      boxShadow: "0 4px 24px rgba(15,23,42,0.07)",
-      position: "sticky",
-      top: 10,
-      zIndex: 50,
-    }}>
-      <div>
-        <h1 style={{ fontSize: 18, fontWeight: 800, color: "var(--color-on-surface)", margin: 0, lineHeight: 1.2 }}>
+    <header className='sticky top-[10px] z-50 mx-[10px] mt-[10px] flex items-center justify-between rounded-[22px] border border-white/70 bg-white/76 px-4 py-3 shadow-lg shadow-slate-900/5 backdrop-blur-[14px] md:px-6'>
+      {/* Chap tomon: Sarlavha va Subtitr */}
+      <div className='min-w-0 flex-1'>
+        <h1 className='truncate text-base font-extrabold leading-tight text-[var(--color-on-surface)] md:text-lg'>
           {title}
         </h1>
         {subtitle && (
-          <p style={{ fontSize: 11, color: "var(--color-on-surface-variant)", margin: "2px 0 0" }}>
+          <p className='truncate text-[10px] text-[var(--color-on-surface-variant)] md:text-[11px] mt-0.5'>
             {subtitle}
           </p>
         )}
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        {/* Search */}
-        <div style={{ position: "relative" }}>
-          <Search size={13} style={{
-            position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)",
-            color: "var(--color-on-surface-variant)",
-          }} />
-          <input
-            type="text"
-            placeholder="Search..."
-            style={{
-              paddingLeft: 30, paddingRight: 14, paddingTop: 8, paddingBottom: 8,
-              fontSize: 12, borderRadius: 10, outline: "none", width: 200,
-              background: "var(--color-surface-container-low)",
-              border: "1px solid var(--color-outline-variant)",
-              color: "var(--color-on-surface)",
-              fontFamily: "inherit",
-            }}
-          />
-        </div>
-
-        {/* Bell */}
-        <button style={{
-          position: "relative", padding: "7px", borderRadius: 10, border: "none",
-          background: "var(--color-surface-container-low)", cursor: "pointer",
-          color: "var(--color-on-surface-variant)", display: "flex",
-        }}>
-          <Bell size={17} strokeWidth={1.75} />
-          <span style={{
-            position: "absolute", top: 6, right: 6, width: 7, height: 7,
-            borderRadius: "50%", background: "var(--color-tertiary)",
-          }} />
-        </button>
-
-        {/* Avatar */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--color-on-surface)" }}>Administrator</div>
-            <div style={{ fontSize: 10, color: "var(--color-on-surface-variant)" }}>Samarkand R. Administration</div>
+      {/* O'ng tomon: Profil qismi */}
+      <div className='ml-4 flex items-center gap-3'>
+        <Link
+          href='/profile'
+          className='group flex items-center gap-2.5 transition-opacity hover:opacity-80'
+        >
+          {/* Matnli qism - Mobil qurilmalarda yashiriladi, m-ekranda chiqadi */}
+          <div className='hidden text-right sm:block'>
+            <div className='text-xs font-bold text-[var(--color-on-surface)] leading-none'>
+              Administrator
+            </div>
+            <div className='mt-1 text-[9px] text-[var(--color-on-surface-variant)] leading-none md:text-[10px]'>
+              Samarkand R. Administration
+            </div>
           </div>
-          <div style={{
-            width: 36, height: 36, borderRadius: "50%",
-            background: "linear-gradient(135deg, var(--color-primary), var(--color-primary-container))",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "white", fontSize: 13, fontWeight: 800,
-          }}>
+
+          {/* Avatar */}
+          <div className='flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-[13px] font-extrabold text-white shadow-sm outline outline-2 outline-offset-2 outline-transparent group-hover:outline-[var(--color-primary)]/20 transition-all'>
             A
           </div>
-        </div>
+        </Link>
       </div>
     </header>
-  );
+  )
 }

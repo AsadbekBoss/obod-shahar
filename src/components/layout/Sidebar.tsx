@@ -1,211 +1,152 @@
-"use client";
+'use client'
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 import {
-  LayoutDashboard, Trash2, Truck, Users, ShieldCheck,
-  BarChart3, Settings, HelpCircle, LogOut, Plus, Building2, ChevronLeft,
-} from "lucide-react";
+  LayoutDashboard,
+  Trash2,
+  Truck,
+  Users,
+  ShieldCheck,
+  BarChart3,
+  LogOut,
+  Building2,
+  ChevronLeft,
+  ChartNoAxesCombined,
+} from 'lucide-react'
 
 const navGroups = [
   {
-    section: "Overview",
+    section: 'Overview',
+    items: [{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }],
+  },
+  {
+    section: 'Management',
     items: [
-      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { href: '/trash-bins', label: 'Trash Bins', icon: Trash2 },
+      { href: '/fleet', label: 'Fleet', icon: Truck },
+      { href: '/drivers', label: 'Drivers', icon: Users },
+      { href: '/admins', label: 'Admins', icon: ShieldCheck },
     ],
   },
   {
-    section: "Management",
+    section: 'Insights',
     items: [
-      { href: "/trash-bins", label: "Trash Bins", icon: Trash2      },
-      { href: "/fleet",      label: "Fleet",       icon: Truck       },
-      { href: "/drivers",    label: "Drivers",     icon: Users       },
-      { href: "/admins",     label: "Admins",      icon: ShieldCheck },
+      { href: '/analytics', label: 'Analytics', icon: BarChart3 },
+      { href: '/system-reports', label: 'System Reports', icon: ChartNoAxesCombined },
     ],
   },
-  {
-    section: "Insights",
-    items: [
-      { href: "/analytics", label: "Analytics", icon: BarChart3 },
-    ],
-  },
-];
-
-const bottomItems = [
-  { href: "/settings", label: "Settings", icon: Settings   },
-  { href: "/support",  label: "Support",  icon: HelpCircle },
-];
+]
 
 interface SidebarProps {
-  collapsed: boolean;
-  onToggle: () => void;
+  collapsed: boolean
+  onToggle: () => void
 }
 
 export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
-  const pathname = usePathname();
-  const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
+  const pathname = usePathname()
+  const router = useRouter()
 
-  const w = collapsed ? "72px" : "260px";
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
+
+  const handleLogout = () => {
+    router.push('/login')
+  }
 
   return (
     <aside
-      style={{
-        position: "fixed", top: 0, left: 0, height: "100vh",
-        width: w, zIndex: 100, padding: "10px",
-        transition: "width 0.3s ease",
-      }}
+      className={`fixed top-0 left-0 h-screen p-2.5 z-[100] transition-all duration-300 ease-in-out ${
+        collapsed ? 'w-[72px]' : 'w-[260px]'
+      }`}
     >
-      {/* Inner dark gradient container */}
-      <div style={{
-        height: "100%", display: "flex", flexDirection: "column",
-        background: "linear-gradient(160deg, var(--color-sidebar-from), var(--color-sidebar-to))",
-        borderRadius: "22px",
-        padding: "20px 14px",
-        overflow: "hidden",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.24)",
-      }}>
-        {/* Logo */}
-        <div style={{
-          display: "flex", alignItems: "center",
-          justifyContent: collapsed ? "center" : "flex-start",
-          gap: collapsed ? 0 : 10,
-          padding: collapsed ? "0 0 20px" : "0 6px 20px",
-          borderBottom: "1px solid rgba(255,255,255,0.10)",
-          marginBottom: 16,
-          overflow: "hidden",
-        }}>
-          <div style={{
-            flexShrink: 0, width: 36, height: 36, borderRadius: 10,
-            background: "rgba(255,255,255,0.18)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <Building2 size={18} color="white" />
+      {/* Ichki konteyner - Dark Gradient */}
+      <div className='relative flex h-full flex-col overflow-hidden rounded-[22px] bg-gradient-to-br from-[var(--color-sidebar-from)] to-[var(--color-sidebar-to)] px-3.5 py-5 shadow-2xl shadow-black/25'>
+        {/* Logo qismi */}
+        <div
+          className={`flex items-center mb-4 pb-5 border-b border-white/10 overflow-hidden ${
+            collapsed ? 'justify-center' : 'justify-start gap-2.5 px-1.5'
+          }`}
+        >
+          <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/20'>
+            <Building2 size={18} className='text-white' />
           </div>
+
           {!collapsed && (
-            <div style={{ overflow: "hidden", whiteSpace: "nowrap" }}>
-              <div style={{ fontSize: 13.5, fontWeight: 800, color: "#fff", letterSpacing: "-0.3px" }}>
+            <div className='flex flex-col overflow-hidden whitespace-nowrap'>
+              <span className='text-[13.5px] font-extrabold text-white tracking-tight'>
                 Obod Shahar
-              </div>
-              <div style={{ fontSize: 9.5, fontWeight: 600, color: "rgba(255,255,255,0.50)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              </span>
+              <span className='text-[9.5px] font-semibold text-white/50 uppercase tracking-wider'>
                 Infrastructure Authority
-              </div>
+              </span>
             </div>
           )}
         </div>
 
-        {/* Nav groups */}
-        <nav style={{ flex: 1, overflowY: "auto", overflowX: "hidden", display: "flex", flexDirection: "column", gap: 0 }}>
-          {navGroups.map(group => (
-            <div key={group.section}>
+        {/* Navigatsiya linklari */}
+        <nav className='flex-1 overflow-y-auto overflow-x-hidden flex flex-col no-scrollbar'>
+          {navGroups.map((group) => (
+            <div key={group.section} className='mb-2'>
               {!collapsed && (
-                <div style={{
-                  fontSize: 9.5, fontWeight: 700, textTransform: "uppercase",
-                  letterSpacing: "0.5px", color: "rgba(255,255,255,0.30)",
-                  padding: "14px 10px 5px",
-                }}>
+                <div className='px-2.5 py-3.5 text-[9.5px] font-bold uppercase tracking-widest text-white/30'>
                   {group.section}
                 </div>
               )}
-              {collapsed && <div style={{ height: 10 }} />}
-              {group.items.map(({ href, label, icon: Icon }) => {
-                const active = isActive(href);
-                return (
-                  <Link key={href} href={href} title={collapsed ? label : undefined} style={{
-                    display: "flex", alignItems: "center",
-                    justifyContent: collapsed ? "center" : "flex-start",
-                    gap: 10,
-                    padding: collapsed ? "10px 0" : "9px 10px",
-                    borderRadius: 12,
-                    color: active ? "var(--color-sidebar-text-active)" : "var(--color-sidebar-text)",
-                    background: active ? "var(--color-sidebar-active-bg)" : "transparent",
-                    border: `1px solid ${active ? "rgba(255,255,255,0.15)" : "transparent"}`,
-                    fontWeight: active ? 700 : 500,
-                    fontSize: 13, textDecoration: "none",
-                    whiteSpace: "nowrap", overflow: "hidden",
-                    transition: "background 0.15s, color 0.15s",
-                    position: "relative",
-                    marginBottom: 2,
-                  }}>
-                    {active && !collapsed && (
-                      <span style={{
-                        position: "absolute", left: -14, top: "50%", transform: "translateY(-50%)",
-                        width: 4, height: 22, background: "var(--color-success)",
-                        borderRadius: "0 4px 4px 0",
-                      }} />
-                    )}
-                    <Icon size={18} strokeWidth={active ? 2.2 : 1.75} style={{ flexShrink: 0 }} />
-                    {!collapsed && <span>{label}</span>}
-                  </Link>
-                );
-              })}
+              {collapsed && <div className='h-2.5' />}
+
+              <div className='flex flex-col gap-0.5'>
+                {group.items.map(({ href, label, icon: Icon }) => {
+                  const active = isActive(href)
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      title={collapsed ? label : undefined}
+                      className={`relative flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] transition-all duration-200 group ${
+                        collapsed ? 'justify-center py-2.5' : 'justify-start'
+                      } ${
+                        active
+                          ? 'bg-[var(--color-sidebar-active-bg)] text-[var(--color-sidebar-text-active)] border border-white/15 font-bold'
+                          : 'text-[var(--color-sidebar-text)] font-medium hover:bg-white/5'
+                      }`}
+                    >
+                      {active && !collapsed && (
+                        <span className='absolute -left-3.5 top-1/2 h-5.5 w-1 -translate-y-1/2 rounded-r bg-[var(--color-success)]' />
+                      )}
+
+                      <Icon size={18} strokeWidth={active ? 2.2 : 1.75} className='shrink-0' />
+
+                      {!collapsed && <span className='truncate'>{label}</span>}
+                    </Link>
+                  )
+                })}
+              </div>
             </div>
           ))}
         </nav>
 
-        {/* Bottom */}
-        <div style={{ borderTop: "1px solid rgba(255,255,255,0.10)", paddingTop: 12 }}>
-          {bottomItems.map(({ href, label, icon: Icon }) => (
-            <Link key={href} href={href} title={collapsed ? label : undefined} style={{
-              display: "flex", alignItems: "center",
-              justifyContent: collapsed ? "center" : "flex-start",
-              gap: 10,
-              padding: collapsed ? "9px 0" : "8px 10px",
-              borderRadius: 10, marginBottom: 2,
-              color: "rgba(255,255,255,0.55)", textDecoration: "none",
-              fontSize: 13, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden",
-            }}>
-              <Icon size={15} strokeWidth={1.75} style={{ flexShrink: 0 }} />
-              {!collapsed && <span>{label}</span>}
-            </Link>
-          ))}
-          <button style={{
-            display: "flex", alignItems: "center",
-            justifyContent: collapsed ? "center" : "flex-start",
-            gap: 10,
-            padding: collapsed ? "9px 0" : "8px 10px",
-            borderRadius: 10, width: "100%",
-            color: "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 500,
-            cursor: "pointer", whiteSpace: "nowrap", overflow: "hidden",
-            background: "none", border: "none", fontFamily: "inherit",
-          }}>
-            <LogOut size={15} strokeWidth={1.75} style={{ flexShrink: 0 }} />
+        {/* Pastki qism - Logout */}
+        <div className='mt-auto border-t border-white/10 pt-3'>
+          <button
+            onClick={handleLogout}
+            className={`flex w-full items-center gap-2.5 rounded-xl text-[13px] font-medium text-white/55 transition-colors hover:bg-white/5 hover:text-white ${
+              collapsed ? 'justify-center py-2.5' : 'px-2.5 py-2 justify-start'
+            }`}
+          >
+            <LogOut size={15} strokeWidth={1.75} className='shrink-0' />
             {!collapsed && <span>Logout</span>}
           </button>
-
-          {!collapsed && (
-            <Link href="/dashboard" style={{
-              marginTop: 10, display: "flex", alignItems: "center",
-              justifyContent: "center", gap: 6,
-              padding: "10px 16px", borderRadius: 12,
-              background: "linear-gradient(135deg, var(--color-primary), var(--color-primary-container))",
-              color: "white", fontSize: 12.5, fontWeight: 700,
-              textDecoration: "none",
-              boxShadow: "0 8px 20px rgba(37,99,235,0.30)",
-            }}>
-              <Plus size={14} /> New Report
-            </Link>
-          )}
         </div>
       </div>
 
-      {/* Collapse toggle */}
+      {/* Toggle tugmasi (Sidebar chetida) */}
       <button
         onClick={onToggle}
-        style={{
-          position: "absolute", top: "50%", right: -12,
-          transform: `translateY(-50%) rotate(${collapsed ? "180deg" : "0deg"})`,
-          width: 24, height: 24, borderRadius: "50%",
-          background: "var(--color-surface-container-lowest)",
-          border: "1px solid var(--color-outline-variant)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          cursor: "pointer", color: "var(--color-on-surface-variant)",
-          boxShadow: "0 2px 8px rgba(15,23,42,0.10)",
-          transition: "transform 0.3s ease, background 0.15s",
-          zIndex: 10,
-        }}
+        className='absolute top-1/2 -right-3 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full border border-[var(--color-outline-variant)] bg-[var(--color-surface-container-lowest)] text-[var(--color-on-surface-variant)] shadow-md transition-all hover:scale-110 z-20'
+        style={{ transform: `translateY(-50%) rotate(${collapsed ? '180deg' : '0deg'})` }}
       >
         <ChevronLeft size={13} />
       </button>
     </aside>
-  );
+  )
 }
