@@ -97,134 +97,101 @@ export default function FleetPage() {
         </div>
 
         {/* Table Card */}
-        <div className='bg-white/80 backdrop-blur-md rounded-2xl flex-1 flex flex-col border border-white shadow-xl shadow-slate-200/50 overflow-hidden'>
-          {/* Table Toolbar */}
-          <div className='flex flex-col lg:flex-row lg:items-center justify-between px-6 py-5 gap-4 border-b border-slate-100'>
-            <div className='flex items-center gap-3'>
-              <h2 className='font-bold text-slate-800 text-lg'>Vehicle Inventory</h2>
-              <span className='text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full bg-blue-600 text-white tracking-wider'>
-                Live Database
-              </span>
-            </div>
-
-            <div className='flex flex-wrap items-center gap-3'>
-              <button className='flex items-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors'>
-                <Filter size={14} /> Filter
-              </button>
-
-              <div className='relative group'>
-                <Search
-                  size={14}
-                  className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors'
-                />
-                <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder='Search units...'
-                  className='pl-9 pr-4 py-2.5 text-sm bg-slate-100 rounded-xl outline-none w-full md:w-56 focus:ring-2 focus:ring-blue-500/10 focus:bg-white border border-transparent focus:border-blue-200 transition-all'
-                />
-              </div>
-
-              <Link
-                href='/fleet/new'
-                className='flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-br from-blue-600 to-indigo-700 hover:shadow-lg hover:shadow-blue-500/30 transition-all active:scale-95'
-              >
-                <Plus size={14} /> Register New Vehicle
-              </Link>
-            </div>
-          </div>
-
-          {/* Table Content */}
-          <div className='overflow-x-auto'>
-            <table className='w-full'>
-              <thead>
-                <tr className='bg-slate-50/50 border-b border-slate-100'>
-                  {[
-                    'Plate Number',
-                    'Model & Capacity',
-                    'Assigned Mahalla',
-                    'Status',
-                    'Actions',
-                  ].map((h) => (
-                    <th
-                      key={h}
-                      className='text-left px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest'
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className='divide-y divide-slate-50'>
-                {filtered.map((v) => (
-                  <tr
-                    key={v.plate}
-                    onClick={() => router.push(`/fleet/${v.plate.replace(/\s/g, '-')}`)}
-                    className='group transition-colors hover:bg-blue-50/40 cursor-pointer'
-                  >
-                    <td className='px-6 py-4'>
-                      <span className='font-bold text-sm text-blue-600'>{v.plate}</span>
-                      <div className='text-[10px] mt-0.5 font-medium text-slate-400'>
+        <div className='overflow-x-auto custom-scrollbar'>
+          {/* Jadvalga min-width beramiz, shunda u juda torayib ketmaydi */}
+          <table className='w-full min-w-[900px] border-collapse'>
+            <thead>
+              <tr className='bg-slate-50/50 border-b border-slate-100'>
+                <th className='text-left px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest w-[180px]'>
+                  Plate Number
+                </th>
+                <th className='text-left px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest min-w-[250px]'>
+                  Model & Capacity
+                </th>
+                <th className='text-left px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest w-[180px]'>
+                  Assigned Mahalla
+                </th>
+                <th className='text-left px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest w-[140px]'>
+                  Status
+                </th>
+                <th className='text-right px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest w-[100px]'>
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className='divide-y divide-slate-50'>
+              {filtered.map((v) => (
+                <tr
+                  key={v.plate}
+                  onClick={() => router.push(`/fleet/${v.plate.replace(/\s/g, '-')}`)}
+                  className='group transition-colors hover:bg-blue-50/40 cursor-pointer'
+                >
+                  {/* Plate Number */}
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    <div className='flex flex-col'>
+                      <span className='font-bold text-sm text-blue-600 tracking-tight'>
+                        {v.plate}
+                      </span>
+                      <span className='text-[10px] mt-1 font-medium text-slate-400'>
                         VIN: {v.capacity}
-                      </div>
-                    </td>
-                    <td className='px-6 py-4'>
-                      <div className='flex items-center gap-3'>
-                        <div className='p-2 bg-slate-100 rounded-lg group-hover:bg-white transition-colors text-slate-500'>
-                          <Truck size={16} />
-                        </div>
-                        <div>
-                          <div className='text-sm font-semibold text-slate-700'>{v.model}</div>
-                          <div className='text-[10px] text-slate-400 font-medium'>
-                            8,000 kg max capacity
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className='px-6 py-4'>
-                      {v.mahalla === 'Unassigned' ? (
-                        <span className='text-xs text-slate-300 italic'>Not Assigned</span>
-                      ) : (
-                        <span className='text-sm font-medium text-slate-600'>{v.mahalla}</span>
-                      )}
-                    </td>
-                    <td className='px-6 py-4'>
-                      <StatusBadge status={v.status} />
-                    </td>
-                    <td className='px-6 py-4'>
-                      <div className='flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity'>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                          }}
-                          className='p-2 hover:bg-blue-100 rounded-lg text-slate-500 hover:text-blue-600 transition-colors'
-                        >
-                          <Pencil size={15} />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                          }}
-                          className='p-2 hover:bg-red-50 rounded-lg text-slate-400 hover:text-red-500 transition-colors'
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      </span>
+                    </div>
+                  </td>
 
-          {/* Table Footer */}
-          <div className='flex flex-col sm:flex-row items-center justify-between px-6 py-5 border-t border-slate-100 gap-4'>
-            <span className='text-xs font-medium text-slate-400'>
-              Showing <span className='text-slate-700'>{filtered.length}</span> of 482 registered
-              vehicles
-            </span>
-            <Pagination current={page} total={46} onPageChange={setPage} />
-          </div>
+                  {/* Model & Capacity */}
+                  <td className='px-6 py-4'>
+                    <div className='flex items-center gap-4'>
+                      <div className='p-2.5 bg-slate-100 rounded-xl group-hover:bg-white transition-colors text-slate-500 shrink-0'>
+                        <Truck size={18} />
+                      </div>
+                      <div className='flex flex-col min-w-0'>
+                        <div className='text-sm font-bold text-slate-700 truncate'>{v.model}</div>
+                        <div className='text-[10px] text-slate-400 font-medium mt-0.5'>
+                          8,000 kg max capacity
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Assigned Mahalla */}
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    {v.mahalla === 'Unassigned' ? (
+                      <span className='text-xs text-slate-300 italic'>Not Assigned</span>
+                    ) : (
+                      <span className='text-sm font-bold text-slate-600'>{v.mahalla}</span>
+                    )}
+                  </td>
+
+                  {/* Status */}
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    <StatusBadge status={v.status} />
+                  </td>
+
+                  {/* Actions */}
+                  <td className='px-6 py-4 text-right'>
+                    <div className='flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity'>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                        }}
+                        className='p-2 hover:bg-blue-100 rounded-lg text-slate-500 hover:text-blue-600 transition-colors'
+                      >
+                        <Pencil size={15} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                        }}
+                        className='p-2 hover:bg-red-50 rounded-lg text-slate-400 hover:text-red-500 transition-colors'
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

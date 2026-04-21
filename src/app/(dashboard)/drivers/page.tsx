@@ -5,7 +5,7 @@ import Header from '@/components/layout/Header'
 import StatusBadge from '@/components/ui/StatusBadge'
 import Pagination from '@/components/ui/Pagination'
 import Link from 'next/link'
-import { Plus, Search, Pencil, Trash2, Truck, User, MoreHorizontal, UserPlus } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2, Truck, User, UserPlus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 const drivers = [
@@ -120,17 +120,23 @@ export default function DriversPage() {
         {/* Main Table Card */}
         <div className='bg-white/70 backdrop-blur-xl rounded-3xl flex-1 flex flex-col border border-white shadow-2xl shadow-slate-200/60 overflow-hidden'>
           <div className='overflow-x-auto'>
-            <table className='w-full text-left'>
+            {/* min-w berish orqali elementlar bir-biriga minishib ketishini oldini olamiz */}
+            <table className='w-full text-left min-w-[850px] border-collapse'>
               <thead>
                 <tr className='bg-slate-50/80 border-b border-slate-100'>
-                  {['Photo', 'Personnel Details', 'Current Vehicle', 'Status', ''].map((h, i) => (
-                    <th
-                      key={i}
-                      className='px-6 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest'
-                    >
-                      {h}
-                    </th>
-                  ))}
+                  <th className='px-6 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest w-[80px]'>
+                    Photo
+                  </th>
+                  <th className='px-6 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest min-w-[220px]'>
+                    Personnel Details
+                  </th>
+                  <th className='px-6 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest w-[200px]'>
+                    Current Vehicle
+                  </th>
+                  <th className='px-6 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest w-[150px]'>
+                    Status
+                  </th>
+                  <th className='px-6 py-5 w-[100px]'></th>
                 </tr>
               </thead>
               <tbody className='divide-y divide-slate-50'>
@@ -141,49 +147,49 @@ export default function DriversPage() {
                     className='group hover:bg-blue-50/40 transition-all cursor-pointer'
                   >
                     <td className='px-6 py-4'>
-                      <div className='w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center border border-white shadow-sm group-hover:scale-105 transition-transform'>
+                      <div className='w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center border border-white shadow-sm group-hover:scale-105 transition-transform shrink-0'>
                         <User
                           size={22}
                           className='text-slate-400 group-hover:text-blue-500 transition-colors'
                         />
                       </div>
                     </td>
-                    <td className='px-6 py-4'>
+                    <td className='px-6 py-4 whitespace-nowrap'>
                       <div className='font-bold text-slate-900 group-hover:text-blue-600 transition-colors'>
                         {d.name}
                       </div>
-                      <div className='text-[11px] font-black text-slate-400 uppercase tracking-tighter mt-0.5'>
+                      <div className='text-[10px] font-black text-slate-400 uppercase tracking-tight mt-0.5'>
                         Badge ID: {d.uid}
                       </div>
                     </td>
-                    <td className='px-6 py-4'>
+                    <td className='px-6 py-4 whitespace-nowrap'>
                       {d.vehicle ? (
                         <div className='flex items-center gap-2.5'>
-                          <div className='p-1.5 bg-blue-50 rounded-lg text-blue-600'>
+                          <div className='p-1.5 bg-blue-50 rounded-lg text-blue-600 shrink-0'>
                             <Truck size={14} />
                           </div>
                           <span className='text-sm font-bold text-slate-700'>{d.vehicle}</span>
                         </div>
                       ) : (
-                        <span className='text-xs font-bold text-slate-300 italic tracking-wide'>
+                        <span className='text-[11px] font-bold text-slate-300 italic tracking-wide'>
                           Awaiting Assignment
                         </span>
                       )}
                     </td>
-                    <td className='px-6 py-4'>
+                    <td className='px-6 py-4 whitespace-nowrap'>
                       <StatusBadge status={d.status} />
                     </td>
                     <td className='px-6 py-4'>
                       <div className='flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0'>
                         <button
                           onClick={(e) => e.stopPropagation()}
-                          className='p-2.5 rounded-xl hover:bg-white hover:shadow-md text-slate-400 hover:text-blue-600 transition-all'
+                          className='p-2 rounded-xl hover:bg-white hover:shadow-md text-slate-400 hover:text-blue-600 transition-all'
                         >
                           <Pencil size={16} />
                         </button>
                         <button
                           onClick={(e) => e.stopPropagation()}
-                          className='p-2.5 rounded-xl hover:bg-white hover:shadow-md text-slate-400 hover:text-red-500 transition-all'
+                          className='p-2 rounded-xl hover:bg-white hover:shadow-md text-slate-400 hover:text-red-500 transition-all'
                         >
                           <Trash2 size={16} />
                         </button>
@@ -197,7 +203,7 @@ export default function DriversPage() {
 
           {/* Footer / Pagination */}
           <div className='mt-auto px-8 py-6 border-t border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50/30'>
-            <div className='flex items-center gap-2'>
+            <div className='flex items-center gap-2 shrink-0'>
               <div className='w-2 h-2 rounded-full bg-green-500 animate-pulse' />
               <span className='text-xs font-bold text-slate-500 uppercase tracking-widest'>
                 Showing {filtered.length} of 520 Staff Members
